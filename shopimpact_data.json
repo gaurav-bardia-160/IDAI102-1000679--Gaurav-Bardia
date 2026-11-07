@@ -1,0 +1,62 @@
+[
+    {
+        "date": "07 Nov 2026",
+        "item": "Air-Freighted Imported Fruits",
+        "sector": "Food & Groceries",
+        "category": "Air-Freighted Imported Fruits",
+        "brand": "General Store",
+        "qty": 1,
+        "unit_price": 1200.0,
+        "price": 1200.0,
+        "multiplier": 0.006,
+        "co2": 7.2,
+        "greener_swap": "Choose local seasonal Indian fruits (guava, banana, Chikoo)",
+        "swap_co2": 0.84,
+        "potential_co2_saved": 6.36
+    },
+    {
+        "date": "07 Nov 2026",
+        "item": "Conventional Leather Formal Shoes",
+        "sector": "Footwear & Accessories",
+        "category": "Conventional Leather Formal Shoes",
+        "brand": "General Store",
+        "qty": 1,
+        "unit_price": 1200.0,
+        "price": 1200.0,
+        "multiplier": 0.0062,
+        "co2": 7.44,
+        "greener_swap": "Switch to chrome-free vegetable-tanned leather or resole",
+        "swap_co2": 1.2,
+        "potential_co2_saved": 6.24
+    },
+    {
+        "date": "07 Nov 2026",
+        "item": "Canned Beverages / Aerated Drinks",
+        "sector": "Food & Groceries",
+        "category": "Canned Beverages / Aerated Drinks",
+        "brand": "General Store",
+        "qty": 1,
+        "unit_price": 1200.0,
+        "price": 1200.0,
+        "multiplier": 0.0025,
+        "co2": 3.0,
+        "greener_swap": "Switch to homemade nimbu pani or buttermilk in glass",
+        "swap_co2": 0.6,
+        "potential_co2_saved": 2.4
+    },
+    {
+        "date": "07 Nov 2026",
+        "item": "Video Game Console",
+        "sector": "Electronics & Tech",
+        "category": "Video Game Console (PS5 / Xbox)",
+        "brand": "XBOX",
+        "qty": 1,
+        "unit_price": 30000.0,
+        "price": 30000.0,
+        "multiplier": 0.0045,
+        "co2": 135.0,
+        "greener_swap": "Buy pre-owned consoles and enable low-power rest mode",
+        "swap_co2": 27.0,
+        "potential_co2_saved": 108.0
+    }
+]
