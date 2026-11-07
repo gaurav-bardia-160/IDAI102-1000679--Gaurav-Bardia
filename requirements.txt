@@ -1,10 +1,6 @@
-# 1. Create clean requirements.txt for Streamlit Cloud deployment
-@"
-streamlit>=1.32.0
-pandas>=2.0.0
-altair>=5.0.0
-fpdf2>=2.7.8
-"@ | Out-File -FilePath requirements.txt -Encoding utf8
-
-# 2. Launch the app
-streamlit run app.py
+streamlit
+pandas
+altair
+Pillow
+fpdf2
+xlsxwriter
