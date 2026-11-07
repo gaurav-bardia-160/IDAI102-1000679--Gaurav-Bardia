@@ -5,7 +5,7 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-Web_App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-Production_Ready-22C55E?style=for-the-badge)
 
-> **🌐 Live Web Application:** [**Click Here to Launch ShopImpact on Streamlit Cloud**](YOUR_STREAMLIT_APP_LINK_HERE)  
+> **🌐 Live Web Application:** [**Click Here to Launch ShopImpact on Streamlit Cloud**](https://idai102-1000679--gaurav-bardia.streamlit.app/)  
 
 ---
 
