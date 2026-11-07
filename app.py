@@ -633,7 +633,7 @@ with st.sidebar:
 # ==============================================================================
 head_l, head_r = st.columns([3, 1])
 with head_l:
-    st.title("🌱 ShopImpact")
+    st.title("ShopImpact")
     st.markdown("Conscious Shopping & Monthly Carbon Footprint Tracker (INR)")
 with head_r:
     st.write("")
@@ -715,7 +715,7 @@ with tab1:
 
     with col_r:
         with st.container(border=True):
-            st.subheader(f"🌱 {badge_title}")
+            st.subheader(f"{badge_title}")
             st.markdown(badge_desc)
             badge_img = generate_automatic_turtle_image(stage_key=stage_key, utilization=utilization)
             st.image(badge_img, use_container_width=True)
