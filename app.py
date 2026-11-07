@@ -2,6 +2,7 @@
 ShopImpact - Personal Carbon Accounting & Conscious Shopping Ledger
 CRS: Artificial Intelligence | Course: Python Programming (Summative Assessment)
 100% Pure Python Implementation (Zero HTML, CSS, or JavaScript)
+Features: Private Device/Session Isolation via st.query_params & UUID
 """
 
 from datetime import date
@@ -12,6 +13,7 @@ import os
 import random
 import subprocess
 import sys
+import uuid
 import altair as alt
 import pandas as pd
 from PIL import Image, ImageDraw
@@ -31,7 +33,7 @@ except ImportError:
     PDF_AVAILABLE = False
 
 # ==============================================================================
-# 1. NATIVE STREAMLIT THEME ENGINE & JSON DATA PERSISTENCE
+# 1. PRIVATE SESSION STORAGE & THEME ENGINE (100% Pure Python)
 # ==============================================================================
 CONFIG_DIR = ".streamlit"
 CONFIG_PATH = os.path.join(CONFIG_DIR, "config.toml")
@@ -57,7 +59,6 @@ DARK_THEME = {
 
 
 def read_saved_theme_is_dark() -> bool:
-    """Reads .streamlit/config.toml to determine if Dark Mode is active."""
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
@@ -68,52 +69,64 @@ def read_saved_theme_is_dark() -> bool:
 
 
 def apply_native_theme(dark_mode: bool):
-    """Updates both Streamlit's live in-memory config and .streamlit/config.toml."""
     os.makedirs(CONFIG_DIR, exist_ok=True)
     palette = DARK_THEME if dark_mode else LIGHT_THEME
-
     for key, val in palette.items():
         try:
             st._config.set_option(f"theme.{key}", val)
         except Exception:
             pass
-
     toml_lines = ["[theme]"] + [f'{k} = "{v}"' for k, v in palette.items()]
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         f.write("\n".join(toml_lines) + "\n")
 
 
 def toggle_theme_callback():
-    """Flips theme state, updates config, and flags immediate NewSession sync."""
     new_mode = not st.session_state.dark_mode
     st.session_state.dark_mode = new_mode
     apply_native_theme(new_mode)
     st.session_state._theme_sync_needed = True
 
 
-def load_data() -> list:
-    """Loads purchase history from local JSON file so refreshes never lose data."""
+# --- Device-Isolated File Storage System ---
+def get_all_storage() -> dict:
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                content = json.load(f)
+                return content if isinstance(content, dict) else {}
         except Exception:
-            return []
-    return []
+            return {}
+    return {}
 
 
-def save_data(data: list):
-    """Saves purchase history to local JSON file."""
+def load_user_purchases(user_id: str) -> list:
+    """Loads purchases ONLY for this specific device/user."""
+    all_data = get_all_storage()
+    return all_data.get(user_id, [])
+
+
+def save_user_purchases(user_id: str, purchases: list):
+    """Saves purchases partitioned by user_id so devices never collide."""
+    all_data = get_all_storage()
+    all_data[user_id] = purchases
     with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4)
+        json.dump(all_data, f, indent=4)
 
+
+# Assign a persistent, private user ID per device in query params
+if "user_id" not in st.query_params:
+    assigned_user_id = str(uuid.uuid4())[:8]
+    st.query_params["user_id"] = assigned_user_id
+else:
+    assigned_user_id = st.query_params["user_id"]
 
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = read_saved_theme_is_dark()
     apply_native_theme(st.session_state.dark_mode)
 
 if "purchases" not in st.session_state:
-    st.session_state.purchases = load_data()
+    st.session_state.purchases = load_user_purchases(assigned_user_id)
 
 st.set_page_config(
     page_title="ShopImpact | Carbon Accounting Dashboard",
@@ -272,11 +285,6 @@ ECO_TIPS = [
 # 3. 10-STAGE AUTOMATIC TURTLE ENGINE (10 Unique Drawings, No "Phase X" Labels)
 # ==============================================================================
 class PurePythonTurtle:
-    """
-    Executes standard Python Turtle movement & polygon primitives and renders
-    onto a 3x supersampled Pillow (PIL) Image for crisp display via st.image().
-    """
-
     def __init__(self, width=480, height=225, bg_color="#F1EFEA"):
         self.scale = 3
         self.width = width * self.scale
@@ -372,96 +380,36 @@ class PurePythonTurtle:
 
 
 def get_automatic_badge_stage(total_co2: float, monthly_budget: float) -> tuple:
-    """
-    Maps current carbon emissions directly to 1 of 10 clear, automatic stages
-    based on the percentage of the monthly carbon budget used.
-    Returns: (stage_key, badge_title, plain_english_explanation, next_stage_hint)
-    """
     pct = (total_co2 / monthly_budget * 100.0) if monthly_budget > 0 else 0.0
     rem = max(0.0, monthly_budget - total_co2)
 
     if total_co2 <= 0.0:
-        return (
-            "sunrise",
-            "Fresh Start",
-            "0 kg CO₂e emitted so far. Log your first purchase on the left to start tracking.",
-            "1%–12% budget: Tiny Sprout",
-        )
+        return ("sunrise", "Fresh Start", "0 kg CO₂e emitted so far. Log your first purchase on the left to start tracking.", "1%–12% budget: Tiny Sprout")
     if pct <= 12.0:
-        return (
-            "sprout",
-            "Tiny Sprout",
-            f"Only {pct:.0f}% of your carbon budget used ({total_co2:.1f} kg). Your footprint is minimal.",
-            f"Keep under {monthly_budget*0.25:.1f} kg (25%) for Blooming Flower",
-        )
+        return ("sprout", "Tiny Sprout", f"Only {pct:.0f}% of your carbon budget used ({total_co2:.1f} kg). Your footprint is minimal.", f"Keep under {monthly_budget*0.25:.1f} kg for Blooming Flower")
     if pct <= 25.0:
-        return (
-            "flower",
-            "Blooming Eco Flower",
-            f"Very low emissions — {pct:.0f}% of budget used with {rem:.1f} kg still available.",
-            f"Next stage at 25% ({monthly_budget*0.25:.1f} kg): Lush Pine Tree",
-        )
+        return ("flower", "Blooming Eco Flower", f"Very low emissions — {pct:.0f}% of budget used with {rem:.1f} kg still available.", f"Next at 25%: Lush Pine Tree")
     if pct <= 40.0:
-        return (
-            "pine",
-            "Lush Pine Tree",
-            f"Low, nature-friendly footprint — {pct:.0f}% of your monthly budget used ({rem:.1f} kg left).",
-            f"Next stage at 40% ({monthly_budget*0.40:.1f} kg): Gold Eco Saver Trophy",
-        )
+        return ("pine", "Lush Pine Tree", f"Low, nature-friendly footprint — {pct:.0f}% of budget used ({rem:.1f} kg left).", f"Next at 40%: Gold Eco Saver Trophy")
     if pct <= 55.0:
-        return (
-            "trophy",
-            "Gold Eco Saver Trophy",
-            f"Halfway mark ({pct:.0f}% used) — you are well within a sustainable monthly pace.",
-            f"Next stage at 55% ({monthly_budget*0.55:.1f} kg): Green Guardian Shield",
-        )
+        return ("trophy", "Gold Eco Saver Trophy", f"Halfway mark ({pct:.0f}% used) — you are well within a sustainable monthly pace.", f"Next at 55%: Green Guardian Shield")
     if pct <= 70.0:
-        return (
-            "shield",
-            "Green Guardian Shield",
-            f"Good standing — {pct:.0f}% of budget used ({rem:.1f} kg remaining before target limit).",
-            f"Next stage at 70% ({monthly_budget*0.70:.1f} kg): Botanical Leaf",
-        )
+        return ("shield", "Green Guardian Shield", f"Good standing — {pct:.0f}% of budget used ({rem:.1f} kg remaining before target limit).", f"Next at 70%: Botanical Leaf")
     if pct <= 82.0:
-        return (
-            "leaf",
-            "Botanical Leaf",
-            f"Moderate emissions ({pct:.0f}% used) — choose greener swaps for upcoming purchases.",
-            f"Next stage at 82% ({monthly_budget*0.82:.1f} kg): Clean Energy Windmill",
-        )
+        return ("leaf", "Botanical Leaf", f"Moderate emissions ({pct:.0f}% used) — choose greener swaps for upcoming purchases.", f"Next at 82%: Clean Energy Windmill")
     if pct <= 92.0:
-        return (
-            "windmill",
-            "Clean Energy Windmill",
-            f"Approaching your monthly limit ({pct:.0f}% used, {rem:.1f} kg left) — prioritize low-impact items.",
-            f"Next stage at 92% ({monthly_budget*0.92:.1f} kg): Amber Hourglass Warning",
-        )
+        return ("windmill", "Clean Energy Windmill", f"Approaching monthly limit ({pct:.0f}% used, {rem:.1f} kg left) — prioritize low-impact items.", f"Next at 92%: Amber Hourglass Warning")
     if pct <= 100.0:
-        return (
-            "hourglass",
-            "Amber Hourglass Warning",
-            f"Almost out of carbon budget ({pct:.0f}% used) — only {rem:.1f} kg of allowance left.",
-            f"Exceeding {monthly_budget:.1f} kg (100%) triggers Heavy Carbon Footprint",
-        )
-    return (
-        "footprint",
-        "Heavy Carbon Footprint",
-        f"Monthly carbon budget exceeded by {total_co2 - monthly_budget:.1f} kg ({pct:.0f}% of target). Check Compare Alternatives to cut emissions.",
-        "Increase target or clear high-impact items to recover",
-    )
+        return ("hourglass", "Amber Hourglass Warning", f"Almost out of carbon budget ({pct:.0f}% used) — only {rem:.1f} kg of allowance left.", f"Over 100%: Heavy Carbon Footprint")
+    return ("footprint", "Heavy Carbon Footprint", f"Monthly carbon budget exceeded by {total_co2 - monthly_budget:.1f} kg ({pct:.0f}% of target). Check Compare Alternatives to cut emissions.", "Reduce high-impact purchases")
 
 
 def generate_automatic_turtle_image(stage_key: str, dark_mode: bool, utilization: float) -> Image.Image:
-    """
-    Renders 1 of 10 completely distinct geometric Turtle drawings surrounded by
-    a live 360-degree carbon budget progress ring.
-    """
     bg_col = "#18221E" if dark_mode else "#F1EFEA"
     ring_track = "#283A33" if dark_mode else "#D5CFC0"
     ring_inner = "#22332C" if dark_mode else "#DFD9CA"
     t = PurePythonTurtle(width=480, height=220, bg_color=bg_col)
 
-    # Outer Gauge Track Ring (Radius 86) & Inner Emblem Ring (Radius 72)
     for radius, col, w in [(86, ring_track, 4.5), (72, ring_inner, 1.2)]:
         t.penup()
         t.goto(0, -radius)
@@ -471,7 +419,6 @@ def generate_automatic_turtle_image(stage_key: str, dark_mode: bool, utilization
         t.pensize(w)
         t.circle(radius)
 
-    # Live 360° Carbon Budget Gauge Arc (Sweeps clockwise from top 90°)
     sweep_deg = min(360.0, max(0.0, utilization * 360.0))
     if sweep_deg > 1.0:
         if utilization <= 0.55:
@@ -496,344 +443,91 @@ def generate_automatic_turtle_image(stage_key: str, dark_mode: bool, utilization
             t.forward(step_len)
             t.right(step_ang)
 
-    # --- 10 DISTINCT STAGE DRAWINGS ---
     if stage_key == "sunrise":
-        # 1. Fresh Start: Golden Sun rising over green hills
-        t.penup()
-        t.goto(-48, -18)
-        t.pendown()
-        t.pencolor("#1B4332")
-        t.fillcolor("#40916C")
-        t.pensize(2)
-        t.begin_fill()
-        t.goto(48, -18)
-        t.goto(36, -34)
-        t.goto(-36, -34)
-        t.goto(-48, -18)
-        t.end_fill()
-        # Half-sun dome
-        t.penup()
-        t.goto(28, -18)
-        t.setheading(90)
-        t.pendown()
-        t.pencolor("#B45309")
-        t.fillcolor("#FBBF24")
-        t.begin_fill()
-        t.circle(28, 180, steps=30)
-        t.goto(28, -18)
-        t.end_fill()
-        # Sunbeams
+        t.penup(); t.goto(-48, -18); t.pendown(); t.pencolor("#1B4332"); t.fillcolor("#40916C"); t.pensize(2); t.begin_fill()
+        t.goto(48, -18); t.goto(36, -34); t.goto(-36, -34); t.goto(-48, -18); t.end_fill()
+        t.penup(); t.goto(28, -18); t.setheading(90); t.pendown(); t.pencolor("#B45309"); t.fillcolor("#FBBF24"); t.begin_fill()
+        t.circle(28, 180, steps=30); t.goto(28, -18); t.end_fill()
         for ang in [30, 60, 90, 120, 150]:
             rad = math.radians(ang)
-            t.penup()
-            t.goto(34 * math.cos(rad), -18 + 34 * math.sin(rad))
-            t.pendown()
-            t.pencolor("#D97706")
-            t.pensize(2.2)
+            t.penup(); t.goto(34 * math.cos(rad), -18 + 34 * math.sin(rad)); t.pendown(); t.pencolor("#D97706"); t.pensize(2.2)
             t.goto(46 * math.cos(rad), -18 + 46 * math.sin(rad))
 
     elif stage_key == "sprout":
-        # 2. Tiny Sprout: Soil mound + centered stem + 2 symmetrical leaves
-        t.penup()
-        t.goto(-34, -36)
-        t.pendown()
-        t.pencolor("#5C4033")
-        t.fillcolor("#8D6E63")
-        t.pensize(2)
-        t.begin_fill()
-        t.goto(34, -36)
-        t.goto(22, -22)
-        t.goto(-22, -22)
-        t.goto(-34, -36)
-        t.end_fill()
-        # Stem
-        t.penup()
-        t.goto(0, -22)
-        t.pendown()
-        t.pencolor("#1B4332")
-        t.pensize(3.2)
-        t.goto(0, 18)
-        # Left & Right Leaves
+        t.penup(); t.goto(-34, -36); t.pendown(); t.pencolor("#5C4033"); t.fillcolor("#8D6E63"); t.pensize(2); t.begin_fill()
+        t.goto(34, -36); t.goto(22, -22); t.goto(-22, -22); t.goto(-34, -36); t.end_fill()
+        t.penup(); t.goto(0, -22); t.pendown(); t.pencolor("#1B4332"); t.pensize(3.2); t.goto(0, 18)
         for sign in [-1, 1]:
-            t.penup()
-            t.goto(0, 2)
-            t.pendown()
-            t.pencolor("#0B130E")
-            t.fillcolor("#52B788")
-            t.pensize(1.8)
-            t.begin_fill()
-            t.goto(sign * 18, 10)
-            t.goto(sign * 28, 26)
-            t.goto(sign * 10, 22)
-            t.goto(0, 10)
-            t.goto(0, 2)
-            t.end_fill()
+            t.penup(); t.goto(0, 2); t.pendown(); t.pencolor("#0B130E"); t.fillcolor("#52B788"); t.pensize(1.8); t.begin_fill()
+            t.goto(sign * 18, 10); t.goto(sign * 28, 26); t.goto(sign * 10, 22); t.goto(0, 10); t.goto(0, 2); t.end_fill()
 
     elif stage_key == "flower":
-        # 3. Blooming Eco Flower: 8 symmetrical petals + golden center
         for ang in range(0, 360, 45):
             rad = math.radians(ang)
             px, py = 24 * math.cos(rad), 24 * math.sin(rad)
-            t.penup()
-            t.goto(px, py - 13)
-            t.setheading(0)
-            t.pendown()
-            t.pencolor("#1B4332")
-            t.fillcolor("#74C69D")
-            t.pensize(1.6)
-            t.begin_fill()
-            t.circle(13, 360, steps=24)
-            t.end_fill()
-        t.penup()
-        t.goto(0, -14)
-        t.setheading(0)
-        t.pendown()
-        t.pencolor("#9A6B26")
-        t.fillcolor("#FBBF24")
-        t.pensize(2)
-        t.begin_fill()
-        t.circle(14, 360, steps=28)
-        t.end_fill()
+            t.penup(); t.goto(px, py - 13); t.setheading(0); t.pendown(); t.pencolor("#1B4332"); t.fillcolor("#74C69D"); t.pensize(1.6); t.begin_fill()
+            t.circle(13, 360, steps=24); t.end_fill()
+        t.penup(); t.goto(0, -14); t.setheading(0); t.pendown(); t.pencolor("#9A6B26"); t.fillcolor("#FBBF24"); t.pensize(2); t.begin_fill()
+        t.circle(14, 360, steps=28); t.end_fill()
 
     elif stage_key == "pine":
-        # 4. Lush Pine Tree: 3-tiered evergreen triangles on a trunk
-        t.penup()
-        t.goto(-7, -46)
-        t.pendown()
-        t.pencolor("#5C4033")
-        t.fillcolor("#7F5539")
-        t.pensize(1.8)
-        t.begin_fill()
-        t.goto(7, -46)
-        t.goto(7, -22)
-        t.goto(-7, -22)
-        t.goto(-7, -46)
-        t.end_fill()
+        t.penup(); t.goto(-7, -46); t.pendown(); t.pencolor("#5C4033"); t.fillcolor("#7F5539"); t.pensize(1.8); t.begin_fill()
+        t.goto(7, -46); t.goto(7, -22); t.goto(-7, -22); t.goto(-7, -46); t.end_fill()
         tiers = [(-38, -22, 38, -22, 0, 6, "#1B4332"), (-31, -4, 31, -4, 0, 24, "#2D6A4F"), (-23, 14, 23, 14, 0, 44, "#40916C")]
         for x1, y1, x2, y2, top_x, top_y, col in tiers:
-            t.penup()
-            t.goto(x1, y1)
-            t.pendown()
-            t.pencolor("#0B130E")
-            t.fillcolor(col)
-            t.pensize(1.8)
-            t.begin_fill()
-            t.goto(x2, y2)
-            t.goto(top_x, top_y)
-            t.goto(x1, y1)
-            t.end_fill()
+            t.penup(); t.goto(x1, y1); t.pendown(); t.pencolor("#0B130E"); t.fillcolor(col); t.pensize(1.8); t.begin_fill()
+            t.goto(x2, y2); t.goto(top_x, top_y); t.goto(x1, y1); t.end_fill()
 
     elif stage_key == "trophy":
-        # 5. Gold Eco Saver Trophy: Pedestal + Golden Cup + Handles
-        # Base & Stem
-        t.penup()
-        t.goto(-22, -42)
-        t.pendown()
-        t.pencolor("#6E4711")
-        t.fillcolor("#9A6B26")
-        t.pensize(2)
-        t.begin_fill()
-        t.goto(22, -42)
-        t.goto(18, -32)
-        t.goto(-18, -32)
-        t.goto(-22, -42)
-        t.end_fill()
-        t.penup()
-        t.goto(-5, -32)
-        t.pendown()
-        t.fillcolor("#D4A373")
-        t.begin_fill()
-        t.goto(5, -32)
-        t.goto(5, -16)
-        t.goto(-5, -16)
-        t.goto(-5, -32)
-        t.end_fill()
-        # Handles
+        t.penup(); t.goto(-22, -42); t.pendown(); t.pencolor("#6E4711"); t.fillcolor("#9A6B26"); t.pensize(2); t.begin_fill()
+        t.goto(22, -42); t.goto(18, -32); t.goto(-18, -32); t.goto(-22, -42); t.end_fill()
+        t.penup(); t.goto(-5, -32); t.pendown(); t.fillcolor("#D4A373"); t.begin_fill()
+        t.goto(5, -32); t.goto(5, -16); t.goto(-5, -16); t.goto(-5, -32); t.end_fill()
         for sign in [-1, 1]:
-            t.penup()
-            t.goto(sign * 22, 22)
-            t.pendown()
-            t.pencolor("#8C5E1A")
-            t.pensize(2.5)
-            t.goto(sign * 34, 18)
-            t.goto(sign * 30, 0)
-            t.goto(sign * 16, -4)
-        # Trophy Cup
-        t.penup()
-        t.goto(-26, 28)
-        t.pendown()
-        t.pencolor("#6E4711")
-        t.fillcolor("#FBBF24")
-        t.pensize(2)
-        t.begin_fill()
-        t.goto(26, 28)
-        t.goto(16, -16)
-        t.goto(-16, -16)
-        t.goto(-26, 28)
-        t.end_fill()
+            t.penup(); t.goto(sign * 22, 22); t.pendown(); t.pencolor("#8C5E1A"); t.pensize(2.5)
+            t.goto(sign * 34, 18); t.goto(sign * 30, 0); t.goto(sign * 16, -4)
+        t.penup(); t.goto(-26, 28); t.pendown(); t.pencolor("#6E4711"); t.fillcolor("#FBBF24"); t.pensize(2); t.begin_fill()
+        t.goto(26, 28); t.goto(16, -16); t.goto(-16, -16); t.goto(-26, 28); t.end_fill()
 
     elif stage_key == "shield":
-        # 6. Green Guardian Shield: Emerald Crest + White Checkmark
-        t.penup()
-        t.goto(0, 44)
-        t.pendown()
-        t.pencolor("#0B130E")
-        t.fillcolor("#2D6A4F")
-        t.pensize(2.2)
-        t.begin_fill()
-        t.goto(34, 28)
-        t.goto(28, -12)
-        t.goto(0, -44)
-        t.goto(-28, -12)
-        t.goto(-34, 28)
-        t.goto(0, 44)
-        t.end_fill()
-        # Checkmark
-        t.penup()
-        t.goto(-14, -2)
-        t.pendown()
-        t.pencolor("#FFFFFF")
-        t.pensize(4.0)
-        t.goto(-3, -14)
-        t.goto(16, 12)
+        t.penup(); t.goto(0, 44); t.pendown(); t.pencolor("#0B130E"); t.fillcolor("#2D6A4F"); t.pensize(2.2); t.begin_fill()
+        t.goto(34, 28); t.goto(28, -12); t.goto(0, -44); t.goto(-28, -12); t.goto(-34, 28); t.goto(0, 44); t.end_fill()
+        t.penup(); t.goto(-14, -2); t.pendown(); t.pencolor("#FFFFFF"); t.pensize(4.0); t.goto(-3, -14); t.goto(16, 12)
 
     elif stage_key == "leaf":
-        # 7. Botanical Leaf: Perfectly centered vertical leaf + aligned veins
-        t.penup()
-        t.goto(0, -40)
-        t.pendown()
-        t.pencolor("#0B130E")
-        t.fillcolor("#52B788")
-        t.pensize(2.0)
-        t.begin_fill()
-        t.goto(24, -18)
-        t.goto(28, 6)
-        t.goto(15, 28)
-        t.goto(0, 44)
-        t.goto(-15, 28)
-        t.goto(-28, 6)
-        t.goto(-24, -18)
-        t.goto(0, -40)
-        t.end_fill()
-        # Centered vertical midrib & side veins
-        t.penup()
-        t.goto(0, -48)
-        t.pendown()
-        t.pencolor("#0B130E")
-        t.pensize(2.2)
-        t.goto(0, 34)
+        t.penup(); t.goto(0, -40); t.pendown(); t.pencolor("#0B130E"); t.fillcolor("#52B788"); t.pensize(2.0); t.begin_fill()
+        t.goto(24, -18); t.goto(28, 6); t.goto(15, 28); t.goto(0, 44); t.goto(-15, 28); t.goto(-28, 6); t.goto(-24, -18); t.goto(0, -40); t.end_fill()
+        t.penup(); t.goto(0, -48); t.pendown(); t.pencolor("#0B130E"); t.pensize(2.2); t.goto(0, 34)
         for vy, span in [(-16, 15), (0, 18), (16, 11)]:
             for sign in [-1, 1]:
-                t.penup()
-                t.goto(0, vy)
-                t.pendown()
-                t.pensize(1.5)
-                t.goto(sign * span, vy + 9)
+                t.penup(); t.goto(0, vy); t.pendown(); t.pensize(1.5); t.goto(sign * span, vy + 9)
 
     elif stage_key == "windmill":
-        # 8. Clean Energy Windmill: Tapered Tower + 3 Rotor Blades
-        t.penup()
-        t.goto(-7, -46)
-        t.pendown()
-        t.pencolor("#1B4332")
-        t.fillcolor("#D5CFC0")
-        t.pensize(2.0)
-        t.begin_fill()
-        t.goto(7, -46)
-        t.goto(2.5, 8)
-        t.goto(-2.5, 8)
-        t.goto(-7, -46)
-        t.end_fill()
-        # 3 Rotor Blades at 90°, 210°, 330°
+        t.penup(); t.goto(-7, -46); t.pendown(); t.pencolor("#1B4332"); t.fillcolor("#D5CFC0"); t.pensize(2.0); t.begin_fill()
+        t.goto(7, -46); t.goto(2.5, 8); t.goto(-2.5, 8); t.goto(-7, -46); t.end_fill()
         for ang in [90, 210, 330]:
-            rad = math.radians(ang)
-            perp = math.radians(ang + 90)
+            rad = math.radians(ang); perp = math.radians(ang + 90)
             bx, by = 40 * math.cos(rad), 8 + 40 * math.sin(rad)
             wx, wy = 5 * math.cos(perp), 5 * math.sin(perp)
-            t.penup()
-            t.goto(0, 8)
-            t.pendown()
-            t.pencolor("#1B4332")
-            t.fillcolor("#40916C")
-            t.pensize(1.8)
-            t.begin_fill()
-            t.goto(wx, 8 + wy)
-            t.goto(bx, by)
-            t.goto(-wx, 8 - wy)
-            t.goto(0, 8)
-            t.end_fill()
-        t.penup()
-        t.goto(0, 2)
-        t.setheading(0)
-        t.pendown()
-        t.fillcolor("#0B130E")
-        t.begin_fill()
-        t.circle(6, 360, steps=18)
-        t.end_fill()
+            t.penup(); t.goto(0, 8); t.pendown(); t.pencolor("#1B4332"); t.fillcolor("#40916C"); t.pensize(1.8); t.begin_fill()
+            t.goto(wx, 8 + wy); t.goto(bx, by); t.goto(-wx, 8 - wy); t.goto(0, 8); t.end_fill()
+        t.penup(); t.goto(0, 2); t.setheading(0); t.pendown(); t.fillcolor("#0B130E"); t.begin_fill(); t.circle(6, 360, steps=18); t.end_fill()
 
     elif stage_key == "hourglass":
-        # 9. Amber Hourglass Warning: Top & Bottom Bulbs + Running Sand
-        t.penup()
-        t.goto(-24, 36)
-        t.pendown()
-        t.pencolor("#92400E")
-        t.fillcolor("#FEF3C7")
-        t.pensize(2.2)
-        t.begin_fill()
-        t.goto(24, 36)
-        t.goto(0, 0)
-        t.goto(-24, 36)
-        t.end_fill()
-        t.penup()
-        t.goto(-24, -36)
-        t.pendown()
-        t.fillcolor("#F59E0B")
-        t.begin_fill()
-        t.goto(24, -36)
-        t.goto(0, 0)
-        t.goto(-24, -36)
-        t.end_fill()
-        # Top & Bottom Frames
+        t.penup(); t.goto(-24, 36); t.pendown(); t.pencolor("#92400E"); t.fillcolor("#FEF3C7"); t.pensize(2.2); t.begin_fill()
+        t.goto(24, 36); t.goto(0, 0); t.goto(-24, 36); t.end_fill()
+        t.penup(); t.goto(-24, -36); t.pendown(); t.fillcolor("#F59E0B"); t.begin_fill()
+        t.goto(24, -36); t.goto(0, 0); t.goto(-24, -36); t.end_fill()
         for fy in [38, -38]:
-            t.penup()
-            t.goto(-28, fy)
-            t.pendown()
-            t.pencolor("#78350F")
-            t.pensize(4.0)
-            t.goto(28, fy)
+            t.penup(); t.goto(-28, fy); t.pendown(); t.pencolor("#78350F"); t.pensize(4.0); t.goto(28, fy)
 
     else:
-        # 10. Heavy Carbon Footprint: Crimson Alert Ring + Footprint
-        t.penup()
-        t.goto(0, -56)
-        t.setheading(0)
-        t.pendown()
-        t.pencolor("#EF4444")
-        t.pensize(1.8)
-        t.circle(56)
-        t.penup()
-        t.goto(0, -38)
-        t.setheading(0)
-        t.pendown()
-        t.pencolor("#991B1B")
-        t.fillcolor("#DC2626")
-        t.pensize(1.8)
-        t.begin_fill()
-        t.circle(20)
-        t.end_fill()
-        t.penup()
-        t.goto(0, 8)
-        t.pendown()
-        t.begin_fill()
-        t.circle(12)
-        t.end_fill()
+        t.penup(); t.goto(0, -56); t.setheading(0); t.pendown(); t.pencolor("#EF4444"); t.pensize(1.8); t.circle(56)
+        t.penup(); t.goto(0, -38); t.setheading(0); t.pendown(); t.pencolor("#991B1B"); t.fillcolor("#DC2626"); t.pensize(1.8); t.begin_fill()
+        t.circle(20); t.end_fill()
+        t.penup(); t.goto(0, 8); t.pendown(); t.begin_fill(); t.circle(12); t.end_fill()
         for idx, x_off in enumerate([-15, -7.5, 0, 7.5, 15]):
-            t.penup()
-            t.goto(x_off, 33 + (4 - abs(idx - 2) * 2))
-            t.pendown()
-            t.begin_fill()
-            t.circle(4.0 - abs(idx - 2) * 0.45)
-            t.end_fill()
+            t.penup(); t.goto(x_off, 33 + (4 - abs(idx - 2) * 2)); t.pendown(); t.begin_fill(); t.circle(4.0 - abs(idx - 2) * 0.45); t.end_fill()
 
     return t.get_image()
 
@@ -842,7 +536,6 @@ def generate_automatic_turtle_image(stage_key: str, dark_mode: bool, utilization
 # 4. PURE PYTHON EXCEL (.XLSX) & PDF EXPORT GENERATORS
 # ==============================================================================
 def build_autofit_xlsx(df_export: pd.DataFrame) -> bytes:
-    """Uses pandas and xlsxwriter to build an Excel workbook with auto-fitted columns."""
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
         df_export.to_excel(writer, index=False, sheet_name="ShopImpact Log")
@@ -971,7 +664,7 @@ with st.sidebar:
                 "potential_co2_saved": round(max(0.0, est_line_co2 - swap_val), 2),
             }
         )
-        save_data(st.session_state.purchases)
+        save_user_purchases(assigned_user_id, st.session_state.purchases)
         st.rerun()
 
 # ==============================================================================
@@ -1000,7 +693,7 @@ avg_per_1000 = ((total_co2 / total_spend) * 1000) if total_spend > 0 else 0.0
 low_impact_count = int((df["multiplier"] <= 0.0015).sum()) if not df.empty else 0
 utilization = (total_co2 / monthly_budget) if monthly_budget > 0 else 0.0
 
-# Automatic 10-Stage Badge Determination (No manual selector, no "Phase X" prefix)
+# Automatic 10-Stage Badge Determination (100% dynamic based on emissions)
 stage_key, badge_title, badge_desc, next_stage_hint = get_automatic_badge_stage(total_co2, monthly_budget)
 
 k1, k2, k3, k4 = st.columns(4)
@@ -1089,7 +782,7 @@ with tab1:
             )
             st.image(badge_img, use_container_width=True)
 
-            st.markdown(f"**Carbon Gauge:** {utilization*100:.0f}% of {monthly_budget} kg quota  •  **Threshold:** {next_stage_hint}")
+            st.markdown(f"**Carbon Gauge:** {utilization*100:.0f}% of {monthly_budget} kg quota  •  **Target:** {next_stage_hint}")
 
 with tab2:
     sim_c1, sim_c2 = st.columns([1.15, 1.4])
@@ -1252,10 +945,9 @@ with tab4:
                 st.markdown("Install `fpdf2` for PDF export.")
 
         with d4:
-            if st.button("Clear Ledger", use_container_width=True, type="primary"):
+            if st.button("Clear Ledger", use_container_width=True):
                 st.session_state.purchases = []
-                save_data([])
+                save_user_purchases(assigned_user_id, [])
                 st.rerun()
-
     else:
         st.markdown("Your purchase ledger is currently empty. Record a transaction from the sidebar to view and export logs.")
