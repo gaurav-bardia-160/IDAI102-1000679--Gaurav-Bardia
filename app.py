@@ -2,7 +2,6 @@
 ShopImpact - Personal Carbon Accounting & Conscious Shopping Ledger
 CRS: Artificial Intelligence | Course: Python Programming (Summative Assessment)
 100% Pure Python Implementation (Zero HTML, CSS, or JavaScript)
-Features: Private Device/Session Isolation via st.query_params & UUID
 """
 
 from datetime import date
@@ -33,7 +32,7 @@ except ImportError:
     PDF_AVAILABLE = False
 
 # ==============================================================================
-# 1. PRIVATE SESSION STORAGE & THEME ENGINE (100% Pure Python)
+# 1. NATIVE STREAMLIT THEME ENGINE & PRIVATE DATA PERSISTENCE
 # ==============================================================================
 CONFIG_DIR = ".streamlit"
 CONFIG_PATH = os.path.join(CONFIG_DIR, "config.toml")
@@ -59,6 +58,7 @@ DARK_THEME = {
 
 
 def read_saved_theme_is_dark() -> bool:
+    """Reads .streamlit/config.toml to determine if Dark Mode is active."""
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
@@ -69,19 +69,23 @@ def read_saved_theme_is_dark() -> bool:
 
 
 def apply_native_theme(dark_mode: bool):
+    """Updates both Streamlit's live in-memory config and .streamlit/config.toml."""
     os.makedirs(CONFIG_DIR, exist_ok=True)
     palette = DARK_THEME if dark_mode else LIGHT_THEME
+
     for key, val in palette.items():
         try:
             st._config.set_option(f"theme.{key}", val)
         except Exception:
             pass
+
     toml_lines = ["[theme]"] + [f'{k} = "{v}"' for k, v in palette.items()]
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         f.write("\n".join(toml_lines) + "\n")
 
 
 def toggle_theme_callback():
+    """Flips theme state, updates config, and flags immediate NewSession sync."""
     new_mode = not st.session_state.dark_mode
     st.session_state.dark_mode = new_mode
     apply_native_theme(new_mode)
@@ -693,7 +697,6 @@ avg_per_1000 = ((total_co2 / total_spend) * 1000) if total_spend > 0 else 0.0
 low_impact_count = int((df["multiplier"] <= 0.0015).sum()) if not df.empty else 0
 utilization = (total_co2 / monthly_budget) if monthly_budget > 0 else 0.0
 
-# Automatic 10-Stage Badge Determination (100% dynamic based on emissions)
 stage_key, badge_title, badge_desc, next_stage_hint = get_automatic_badge_stage(total_co2, monthly_budget)
 
 k1, k2, k3, k4 = st.columns(4)
