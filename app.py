@@ -2,17 +2,16 @@
 ShopImpact - Personal Carbon Accounting & Conscious Shopping Ledger
 CRS: Artificial Intelligence | Course: Python Programming (Summative Assessment)
 100% Pure Python Implementation (Zero HTML, CSS, or JavaScript)
+Pure In-Memory Session State (Zero Shared Server Files & Zero Sync Issues)
 """
 
 from datetime import date
 import io
-import json
 import math
 import os
 import random
 import subprocess
 import sys
-import uuid
 import altair as alt
 import pandas as pd
 from PIL import Image, ImageDraw
@@ -32,11 +31,10 @@ except ImportError:
     PDF_AVAILABLE = False
 
 # ==============================================================================
-# 1. NATIVE STREAMLIT THEME ENGINE & PRIVATE DATA PERSISTENCE
+# 1. NATIVE STREAMLIT THEME ENGINE & IN-MEMORY CLOUD SESSION STATE
 # ==============================================================================
 CONFIG_DIR = ".streamlit"
 CONFIG_PATH = os.path.join(CONFIG_DIR, "config.toml")
-DATA_FILE = "shopimpact_data.json"
 
 LIGHT_THEME = {
     "base": "light",
@@ -58,7 +56,7 @@ DARK_THEME = {
 
 
 def read_saved_theme_is_dark() -> bool:
-    """Reads .streamlit/config.toml to determine if Dark Mode is active."""
+    """Reads .streamlit/config.toml to check active base theme."""
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
@@ -69,7 +67,7 @@ def read_saved_theme_is_dark() -> bool:
 
 
 def apply_native_theme(dark_mode: bool):
-    """Updates both Streamlit's live in-memory config and .streamlit/config.toml."""
+    """Updates live Streamlit config options and writes default config.toml."""
     os.makedirs(CONFIG_DIR, exist_ok=True)
     palette = DARK_THEME if dark_mode else LIGHT_THEME
 
@@ -85,52 +83,20 @@ def apply_native_theme(dark_mode: bool):
 
 
 def toggle_theme_callback():
-    """Flips theme state, updates config, and flags immediate NewSession sync."""
+    """Toggles theme mode for this session."""
     new_mode = not st.session_state.dark_mode
     st.session_state.dark_mode = new_mode
     apply_native_theme(new_mode)
     st.session_state._theme_sync_needed = True
 
 
-# --- Device-Isolated File Storage System ---
-def get_all_storage() -> dict:
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                content = json.load(f)
-                return content if isinstance(content, dict) else {}
-        except Exception:
-            return {}
-    return {}
-
-
-def load_user_purchases(user_id: str) -> list:
-    """Loads purchases ONLY for this specific device/user."""
-    all_data = get_all_storage()
-    return all_data.get(user_id, [])
-
-
-def save_user_purchases(user_id: str, purchases: list):
-    """Saves purchases partitioned by user_id so devices never collide."""
-    all_data = get_all_storage()
-    all_data[user_id] = purchases
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(all_data, f, indent=4)
-
-
-# Assign a persistent, private user ID per device in query params
-if "user_id" not in st.query_params:
-    assigned_user_id = str(uuid.uuid4())[:8]
-    st.query_params["user_id"] = assigned_user_id
-else:
-    assigned_user_id = st.query_params["user_id"]
-
+# Initialize pure in-memory session state (100% private per device)
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = read_saved_theme_is_dark()
     apply_native_theme(st.session_state.dark_mode)
 
 if "purchases" not in st.session_state:
-    st.session_state.purchases = load_user_purchases(assigned_user_id)
+    st.session_state.purchases = []
 
 st.set_page_config(
     page_title="ShopImpact | Carbon Accounting Dashboard",
@@ -286,7 +252,7 @@ ECO_TIPS = [
 
 
 # ==============================================================================
-# 3. 10-STAGE AUTOMATIC TURTLE ENGINE (10 Unique Drawings, No "Phase X" Labels)
+# 3. 10-STAGE AUTOMATIC TURTLE ENGINE (10 Distinct Native Images)
 # ==============================================================================
 class PurePythonTurtle:
     def __init__(self, width=480, height=225, bg_color="#F1EFEA"):
@@ -668,7 +634,6 @@ with st.sidebar:
                 "potential_co2_saved": round(max(0.0, est_line_co2 - swap_val), 2),
             }
         )
-        save_user_purchases(assigned_user_id, st.session_state.purchases)
         st.rerun()
 
 # ==============================================================================
@@ -950,7 +915,6 @@ with tab4:
         with d4:
             if st.button("Clear Ledger", use_container_width=True):
                 st.session_state.purchases = []
-                save_user_purchases(assigned_user_id, [])
                 st.rerun()
     else:
         st.markdown("Your purchase ledger is currently empty. Record a transaction from the sidebar to view and export logs.")
