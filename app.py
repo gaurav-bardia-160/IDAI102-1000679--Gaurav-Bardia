@@ -2,7 +2,7 @@
 ShopImpact - Personal Carbon Accounting & Conscious Shopping Ledger
 CRS: Artificial Intelligence | Course: Python Programming (Summative Assessment)
 100% Pure Python Implementation (Zero HTML, CSS, or JavaScript)
-Pure In-Memory Session State (Zero Server Config Mutation & Zero Cross-Device Sync)
+Pure In-Memory Session State (Zero Multi-Device Sync Issues)
 """
 
 from datetime import date
@@ -30,25 +30,16 @@ except ImportError:
     PDF_AVAILABLE = False
 
 # ==============================================================================
-# 1. PURE PRIVATE IN-MEMORY SESSION STATE (100% Isolated Per Device)
+# 1. PURE PRIVATE IN-MEMORY SESSION STATE (Isolated per Device)
 # ==============================================================================
-if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = False
-
-if "purchases" not in st.session_state:
-    st.session_state.purchases = []
-
-
-def toggle_theme_callback():
-    """Toggles theme state ONLY for this private device session."""
-    st.session_state.dark_mode = not st.session_state.dark_mode
-
-
 st.set_page_config(
     page_title="ShopImpact | Carbon Accounting Dashboard",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+if "purchases" not in st.session_state:
+    st.session_state.purchases = []
 
 # ==============================================================================
 # 2. 108 PRODUCT CATEGORIES DATABASE (Calibrated for INR ₹)
@@ -194,7 +185,7 @@ ECO_TIPS = [
 
 
 # ==============================================================================
-# 3. 10-STAGE AUTOMATIC TURTLE ENGINE (10 Unique Drawings, No "Phase X" Labels)
+# 3. 10-STAGE AUTOMATIC TURTLE DRAWINGS
 # ==============================================================================
 class PurePythonTurtle:
     def __init__(self, width=480, height=225, bg_color="#F1EFEA"):
@@ -316,13 +307,10 @@ def get_automatic_badge_stage(total_co2: float, monthly_budget: float) -> tuple:
     return ("footprint", "Heavy Carbon Footprint", f"Monthly carbon budget exceeded by {total_co2 - monthly_budget:.1f} kg ({pct:.0f}% of target). Check Compare Alternatives to cut emissions.", "Reduce high-impact purchases")
 
 
-def generate_automatic_turtle_image(stage_key: str, dark_mode: bool, utilization: float) -> Image.Image:
-    bg_col = "#18221E" if dark_mode else "#F1EFEA"
-    ring_track = "#283A33" if dark_mode else "#D5CFC0"
-    ring_inner = "#22332C" if dark_mode else "#DFD9CA"
-    t = PurePythonTurtle(width=480, height=220, bg_color=bg_col)
+def generate_automatic_turtle_image(stage_key: str, utilization: float) -> Image.Image:
+    t = PurePythonTurtle(width=480, height=220, bg_color="#F1EFEA")
 
-    for radius, col, w in [(86, ring_track, 4.5), (72, ring_inner, 1.2)]:
+    for radius, col, w in [(86, "#D5CFC0", 4.5), (72, "#DFD9CA", 1.2)]:
         t.penup()
         t.goto(0, -radius)
         t.setheading(0)
@@ -333,15 +321,7 @@ def generate_automatic_turtle_image(stage_key: str, dark_mode: bool, utilization
 
     sweep_deg = min(360.0, max(0.0, utilization * 360.0))
     if sweep_deg > 1.0:
-        if utilization <= 0.55:
-            arc_col = "#34D399" if dark_mode else "#1B4332"
-        elif utilization <= 0.82:
-            arc_col = "#52B788" if dark_mode else "#2D6A4F"
-        elif utilization <= 1.00:
-            arc_col = "#F59E0B"
-        else:
-            arc_col = "#EF4444"
-
+        arc_col = "#1B4332" if utilization <= 0.55 else ("#2D6A4F" if utilization <= 0.82 else ("#F59E0B" if utilization <= 1.00 else "#EF4444"))
         t.penup()
         t.goto(0, 86)
         t.setheading(0)
@@ -445,7 +425,7 @@ def generate_automatic_turtle_image(stage_key: str, dark_mode: bool, utilization
 
 
 # ==============================================================================
-# 4. PURE PYTHON EXCEL (.XLSX) & PDF EXPORT GENERATORS
+# 4. EXCEL (.XLSX) & PDF EXPORT GENERATORS
 # ==============================================================================
 def build_autofit_xlsx(df_export: pd.DataFrame) -> bytes:
     output = io.BytesIO()
@@ -581,17 +561,13 @@ with st.sidebar:
 # ==============================================================================
 # 6. TOP HEADER BAR & KPI METRICS
 # ==============================================================================
-head_l, head_m, head_r = st.columns([2.5, 1.1, 1.0])
+head_l, head_r = st.columns([3, 1])
 with head_l:
     st.subheader("ShopImpact")
     st.markdown("Personal Carbon Accounting & Sustainable Purchasing Ledger (INR)")
-with head_m:
-    st.write("")
-    st.markdown(f"Monthly Quota: **{monthly_budget} kg CO₂e**")
 with head_r:
     st.write("")
-    btn_label = "Switch to Light Theme" if st.session_state.dark_mode else "Switch to Dark Theme"
-    st.button(btn_label, on_click=toggle_theme_callback, use_container_width=True)
+    st.markdown(f"Monthly Quota: **{monthly_budget} kg CO₂e**")
 
 st.divider()
 
@@ -647,32 +623,17 @@ with tab1:
             st.markdown("Cumulative kg CO₂e across logged purchases")
             if not df.empty:
                 sec_df = df.groupby("category", as_index=False).agg(total_co2=("co2", "sum"), spend=("price", "sum"), units=("qty", "sum"))
-                bar_col = "#34D399" if st.session_state.dark_mode else "#1B4332"
-                axis_txt_col = "#F3F6F4" if st.session_state.dark_mode else "#0B130E"
-                grid_col = "#283A33" if st.session_state.dark_mode else "#D5CFC0"
-                chart_bg = "#0E1412" if st.session_state.dark_mode else "#FFFFFF"
-
                 chart = (
                     alt.Chart(sec_df)
-                    .mark_bar(cornerRadiusTopRight=4, cornerRadiusBottomRight=4, color=bar_col)
+                    .mark_bar(cornerRadiusTopRight=4, cornerRadiusBottomRight=4)
                     .encode(
-                        y=alt.Y(
-                            "category:N",
-                            sort="-x",
-                            title=None,
-                            axis=alt.Axis(labelLimit=250, labelColor=axis_txt_col, labelFontSize=12),
-                        ),
-                        x=alt.X(
-                            "total_co2:Q",
-                            title="Emissions (kg CO₂e)",
-                            axis=alt.Axis(labelColor=axis_txt_col, titleColor=axis_txt_col, gridColor=grid_col, labelFontSize=12),
-                        ),
+                        y=alt.Y("category:N", sort="-x", title=None, axis=alt.Axis(labelLimit=250)),
+                        x=alt.X("total_co2:Q", title="Emissions (kg CO₂e)"),
                         tooltip=["category", "units", "spend", "total_co2"],
                     )
-                    .properties(height=alt.Step(38), background=chart_bg)
-                    .configure_view(strokeWidth=0)
+                    .properties(height=alt.Step(38))
                 )
-                st.altair_chart(chart, use_container_width=True)
+                st.altair_chart(chart, use_container_width=True, theme="streamlit")
             else:
                 st.markdown("No purchases logged yet. Use the sidebar form to add your first entry.")
 
@@ -684,14 +645,8 @@ with tab1:
         with st.container(border=True):
             st.subheader(badge_title)
             st.markdown(badge_desc)
-
-            badge_img = generate_automatic_turtle_image(
-                stage_key=stage_key,
-                dark_mode=st.session_state.dark_mode,
-                utilization=utilization,
-            )
+            badge_img = generate_automatic_turtle_image(stage_key=stage_key, utilization=utilization)
             st.image(badge_img, use_container_width=True)
-
             st.markdown(f"**Carbon Gauge:** {utilization*100:.0f}% of {monthly_budget} kg quota  •  **Target:** {next_stage_hint}")
 
 with tab2:
