@@ -2,15 +2,18 @@
 ShopImpact - Personal Carbon Accounting & Conscious Shopping Ledger
 CRS: Artificial Intelligence | Course: Python Programming (Summative Assessment)
 100% Pure Python Implementation (Zero HTML, CSS, or JavaScript)
-Pure In-Memory Session State (Zero Multi-Device Sync Issues)
+Client-Side URL Compression: Survives Refresh & Zero Cross-Device Sync
 """
 
+import base64
 from datetime import date
 import io
+import json
 import math
 import random
 import subprocess
 import sys
+import zlib
 import altair as alt
 import pandas as pd
 from PIL import Image, ImageDraw
@@ -30,16 +33,14 @@ except ImportError:
     PDF_AVAILABLE = False
 
 # ==============================================================================
-# 1. PURE PRIVATE IN-MEMORY SESSION STATE (Isolated per Device)
+# 1. PAGE CONFIGURATION
 # ==============================================================================
 st.set_page_config(
-    page_title="ShopImpact | Carbon Accounting Dashboard",
+    page_title="ShopImpact | Conscious Shopping Companion",
+    page_icon="🌱",
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-if "purchases" not in st.session_state:
-    st.session_state.purchases = []
 
 # ==============================================================================
 # 2. 108 PRODUCT CATEGORIES DATABASE (Calibrated for INR ₹)
@@ -185,10 +186,77 @@ ECO_TIPS = [
 
 
 # ==============================================================================
-# 3. 10-STAGE AUTOMATIC TURTLE DRAWINGS
+# 3. CLIENT-SIDE URL COMPRESSION ENGINE (SURVIVES REFRESH & ZERO SYNC BUGS)
+# ==============================================================================
+def encode_purchases_to_url(purchases: list) -> str:
+    """Compresses purchases into an ultra-compact Base64 URL string."""
+    if not purchases:
+        return ""
+    minimal = [
+        [
+            p["date"],
+            p["item"],
+            p["category"],
+            p["brand"],
+            p["qty"],
+            p["unit_price"],
+            p["price"],
+        ]
+        for p in purchases
+    ]
+    raw = json.dumps(minimal).encode("utf-8")
+    compressed = zlib.compress(raw, level=9)
+    return base64.urlsafe_b64encode(compressed).decode("ascii")
+
+
+def decode_purchases_from_url(encoded_str: str) -> list:
+    """Restores the full analytical ledger from a compressed URL string upon refresh."""
+    if not encoded_str:
+        return []
+    try:
+        compressed = base64.urlsafe_b64decode(encoded_str.encode("ascii"))
+        raw = zlib.decompress(compressed).decode("utf-8")
+        minimal = json.loads(raw)
+        reconstructed = []
+        for d, item, cat, brand, qty, unit_p, tot_p in minimal:
+            sec, mult, alt_desc, alt_mult = PRODUCT_CATALOG.get(
+                cat, ("General", 0.001, "Sustainable alternative", 0.0005)
+            )
+            co2_val = round(tot_p * mult, 2)
+            swap_val = round(tot_p * alt_mult, 2)
+            reconstructed.append(
+                {
+                    "date": d,
+                    "item": item,
+                    "sector": sec,
+                    "category": cat,
+                    "brand": brand,
+                    "qty": int(qty),
+                    "unit_price": round(unit_p, 2),
+                    "price": round(tot_p, 2),
+                    "multiplier": mult,
+                    "co2": co2_val,
+                    "greener_swap": alt_desc,
+                    "swap_co2": swap_val,
+                    "potential_co2_saved": round(max(0.0, co2_val - swap_val), 2),
+                }
+            )
+        return reconstructed
+    except Exception:
+        return []
+
+
+# Load purchases from the active browser tab's URL param on refresh
+if "purchases" not in st.session_state:
+    url_data = st.query_params.get("ledger", "")
+    st.session_state.purchases = decode_purchases_from_url(url_data)
+
+
+# ==============================================================================
+# 4. 10-STAGE AUTOMATIC TURTLE DRAWINGS
 # ==============================================================================
 class PurePythonTurtle:
-    def __init__(self, width=480, height=225, bg_color="#F1EFEA"):
+    def __init__(self, width=480, height=225, bg_color="#EDE7DE"):
         self.scale = 3
         self.width = width * self.scale
         self.height = height * self.scale
@@ -308,9 +376,9 @@ def get_automatic_badge_stage(total_co2: float, monthly_budget: float) -> tuple:
 
 
 def generate_automatic_turtle_image(stage_key: str, utilization: float) -> Image.Image:
-    t = PurePythonTurtle(width=480, height=220, bg_color="#F1EFEA")
+    t = PurePythonTurtle(width=480, height=220, bg_color="#EDE7DE")
 
-    for radius, col, w in [(86, "#D5CFC0", 4.5), (72, "#DFD9CA", 1.2)]:
+    for radius, col, w in [(86, "#D4CBBF", 4.5), (72, "#DFD7CA", 1.2)]:
         t.penup()
         t.goto(0, -radius)
         t.setheading(0)
@@ -321,7 +389,7 @@ def generate_automatic_turtle_image(stage_key: str, utilization: float) -> Image
 
     sweep_deg = min(360.0, max(0.0, utilization * 360.0))
     if sweep_deg > 1.0:
-        arc_col = "#1B4332" if utilization <= 0.55 else ("#2D6A4F" if utilization <= 0.82 else ("#F59E0B" if utilization <= 1.00 else "#EF4444"))
+        arc_col = "#2D6A4F" if utilization <= 0.55 else ("#52B788" if utilization <= 0.82 else ("#D97706" if utilization <= 1.00 else "#DC2626"))
         t.penup()
         t.goto(0, 86)
         t.setheading(0)
@@ -350,7 +418,7 @@ def generate_automatic_turtle_image(stage_key: str, utilization: float) -> Image
         t.goto(34, -36); t.goto(22, -22); t.goto(-22, -22); t.goto(-34, -36); t.end_fill()
         t.penup(); t.goto(0, -22); t.pendown(); t.pencolor("#1B4332"); t.pensize(3.2); t.goto(0, 18)
         for sign in [-1, 1]:
-            t.penup(); t.goto(0, 2); t.pendown(); t.pencolor("#0B130E"); t.fillcolor("#52B788"); t.pensize(1.8); t.begin_fill()
+            t.penup(); t.goto(0, 2); t.pendown(); t.pencolor("#182E23"); t.fillcolor("#52B788"); t.pensize(1.8); t.begin_fill()
             t.goto(sign * 18, 10); t.goto(sign * 28, 26); t.goto(sign * 10, 22); t.goto(0, 10); t.goto(0, 2); t.end_fill()
 
     elif stage_key == "flower":
@@ -367,7 +435,7 @@ def generate_automatic_turtle_image(stage_key: str, utilization: float) -> Image
         t.goto(7, -46); t.goto(7, -22); t.goto(-7, -22); t.goto(-7, -46); t.end_fill()
         tiers = [(-38, -22, 38, -22, 0, 6, "#1B4332"), (-31, -4, 31, -4, 0, 24, "#2D6A4F"), (-23, 14, 23, 14, 0, 44, "#40916C")]
         for x1, y1, x2, y2, top_x, top_y, col in tiers:
-            t.penup(); t.goto(x1, y1); t.pendown(); t.pencolor("#0B130E"); t.fillcolor(col); t.pensize(1.8); t.begin_fill()
+            t.penup(); t.goto(x1, y1); t.pendown(); t.pencolor("#182E23"); t.fillcolor(col); t.pensize(1.8); t.begin_fill()
             t.goto(x2, y2); t.goto(top_x, top_y); t.goto(x1, y1); t.end_fill()
 
     elif stage_key == "trophy":
@@ -382,14 +450,14 @@ def generate_automatic_turtle_image(stage_key: str, utilization: float) -> Image
         t.goto(26, 28); t.goto(16, -16); t.goto(-16, -16); t.goto(-26, 28); t.end_fill()
 
     elif stage_key == "shield":
-        t.penup(); t.goto(0, 44); t.pendown(); t.pencolor("#0B130E"); t.fillcolor("#2D6A4F"); t.pensize(2.2); t.begin_fill()
+        t.penup(); t.goto(0, 44); t.pendown(); t.pencolor("#182E23"); t.fillcolor("#2D6A4F"); t.pensize(2.2); t.begin_fill()
         t.goto(34, 28); t.goto(28, -12); t.goto(0, -44); t.goto(-28, -12); t.goto(-34, 28); t.goto(0, 44); t.end_fill()
         t.penup(); t.goto(-14, -2); t.pendown(); t.pencolor("#FFFFFF"); t.pensize(4.0); t.goto(-3, -14); t.goto(16, 12)
 
     elif stage_key == "leaf":
-        t.penup(); t.goto(0, -40); t.pendown(); t.pencolor("#0B130E"); t.fillcolor("#52B788"); t.pensize(2.0); t.begin_fill()
+        t.penup(); t.goto(0, -40); t.pendown(); t.pencolor("#182E23"); t.fillcolor("#52B788"); t.pensize(2.0); t.begin_fill()
         t.goto(24, -18); t.goto(28, 6); t.goto(15, 28); t.goto(0, 44); t.goto(-15, 28); t.goto(-28, 6); t.goto(-24, -18); t.goto(0, -40); t.end_fill()
-        t.penup(); t.goto(0, -48); t.pendown(); t.pencolor("#0B130E"); t.pensize(2.2); t.goto(0, 34)
+        t.penup(); t.goto(0, -48); t.pendown(); t.pencolor("#182E23"); t.pensize(2.2); t.goto(0, 34)
         for vy, span in [(-16, 15), (0, 18), (16, 11)]:
             for sign in [-1, 1]:
                 t.penup(); t.goto(0, vy); t.pendown(); t.pensize(1.5); t.goto(sign * span, vy + 9)
@@ -403,7 +471,7 @@ def generate_automatic_turtle_image(stage_key: str, utilization: float) -> Image
             wx, wy = 5 * math.cos(perp), 5 * math.sin(perp)
             t.penup(); t.goto(0, 8); t.pendown(); t.pencolor("#1B4332"); t.fillcolor("#40916C"); t.pensize(1.8); t.begin_fill()
             t.goto(wx, 8 + wy); t.goto(bx, by); t.goto(-wx, 8 - wy); t.goto(0, 8); t.end_fill()
-        t.penup(); t.goto(0, 2); t.setheading(0); t.pendown(); t.fillcolor("#0B130E"); t.begin_fill(); t.circle(6, 360, steps=18); t.end_fill()
+        t.penup(); t.goto(0, 2); t.setheading(0); t.pendown(); t.fillcolor("#182E23"); t.begin_fill(); t.circle(6, 360, steps=18); t.end_fill()
 
     elif stage_key == "hourglass":
         t.penup(); t.goto(-24, 36); t.pendown(); t.pencolor("#92400E"); t.fillcolor("#FEF3C7"); t.pensize(2.2); t.begin_fill()
@@ -425,7 +493,7 @@ def generate_automatic_turtle_image(stage_key: str, utilization: float) -> Image
 
 
 # ==============================================================================
-# 4. EXCEL (.XLSX) & PDF EXPORT GENERATORS
+# 5. EXCEL (.XLSX) & PDF EXPORT GENERATORS
 # ==============================================================================
 def build_autofit_xlsx(df_export: pd.DataFrame) -> bytes:
     output = io.BytesIO()
@@ -454,7 +522,7 @@ def generate_pdf_report(df: pd.DataFrame, total_spend: float, total_co2: float, 
     pdf.cell(0, 13, "  ShopImpact | Monthly Carbon Footprint Report", ln=True, fill=True)
     pdf.ln(4)
 
-    pdf.set_text_color(15, 25, 20)
+    pdf.set_text_color(24, 46, 35)
     pdf.set_font("Helvetica", "B", 10.5)
     pdf.cell(0, 7, f"Date: {date.today().strftime('%d %b %Y')}   |   Current Standing: {safe_badge}", ln=True)
     pdf.set_font("Helvetica", "", 9.5)
@@ -467,7 +535,7 @@ def generate_pdf_report(df: pd.DataFrame, total_spend: float, total_co2: float, 
     pdf.ln(4)
 
     pdf.set_fill_color(220, 215, 201)
-    pdf.set_text_color(15, 25, 20)
+    pdf.set_text_color(24, 46, 35)
     pdf.set_font("Helvetica", "B", 8)
     pdf.cell(22, 8, "Date", border=1, fill=True)
     pdf.cell(34, 8, "Item", border=1, fill=True)
@@ -500,10 +568,10 @@ def generate_pdf_report(df: pd.DataFrame, total_spend: float, total_co2: float, 
 
 
 # ==============================================================================
-# 5. SIDEBAR: PURCHASE ENTRY & BUDGET TARGET
+# 6. SIDEBAR: PURCHASE ENTRY & BUDGET TARGET
 # ==============================================================================
 with st.sidebar:
-    st.subheader("ShopImpact")
+    st.subheader("🌱 ShopImpact")
     st.markdown(f"Reference Catalog: **{len(PRODUCT_CATALOG)} Categories**")
 
     monthly_budget = st.slider("Monthly Carbon Target (kg CO₂e)", min_value=15, max_value=250, value=60, step=5)
@@ -518,8 +586,8 @@ with st.sidebar:
     per_1000_kg = preview_mult * 1000
 
     with st.container(border=True):
-        st.markdown(f"**Factor:** {per_1000_kg:.2f} kg CO₂e / ₹1,000")
-        st.markdown(f"**Alternative:** {preview_alt}")
+        st.markdown(f"**Emission Intensity:** `{per_1000_kg:.2f} kg CO₂e / ₹1,000`")
+        st.markdown(f"**Greener Alternative:** {preview_alt}")
 
     item_input = st.text_input("Item Description", placeholder="e.g., Cotton Kurta / Running Shoes", key="inp_item")
     brand_input = st.text_input("Brand / Store", placeholder="e.g., Fabindia / Local Store", key="inp_brand")
@@ -556,18 +624,20 @@ with st.sidebar:
                 "potential_co2_saved": round(max(0.0, est_line_co2 - swap_val), 2),
             }
         )
+        # Update client-side URL so refresh preserves the data
+        st.query_params["ledger"] = encode_purchases_to_url(st.session_state.purchases)
         st.rerun()
 
 # ==============================================================================
-# 6. TOP HEADER BAR & KPI METRICS
+# 7. TOP HEADER BAR & KPI METRICS
 # ==============================================================================
 head_l, head_r = st.columns([3, 1])
 with head_l:
-    st.subheader("ShopImpact")
-    st.markdown("Personal Carbon Accounting & Sustainable Purchasing Ledger (INR)")
+    st.title("🌱 ShopImpact")
+    st.markdown("Conscious Shopping & Monthly Carbon Footprint Tracker (INR)")
 with head_r:
     st.write("")
-    st.markdown(f"Monthly Quota: **{monthly_budget} kg CO₂e**")
+    st.markdown(f"**Monthly Quota:** `{monthly_budget} kg CO₂e`")
 
 st.divider()
 
@@ -586,27 +656,27 @@ k1, k2, k3, k4 = st.columns(4)
 with k1:
     with st.container(border=True):
         st.metric("Monthly Spend", f"₹{total_spend:,.0f}")
-        st.markdown(f"**{len(df)}** transactions (**{total_units}** units)")
+        st.markdown(f"**{len(df)}** purchases (**{total_units}** items)")
 with k2:
     rem = monthly_budget - total_co2
-    rem_text = f"**{rem:,.1f} kg** below target quota" if rem >= 0 else f"**{abs(rem):,.1f} kg** above target quota"
+    rem_text = f"**{rem:,.1f} kg** safe remaining" if rem >= 0 else f"**{abs(rem):,.1f} kg** over quota"
     with st.container(border=True):
         st.metric("Estimated CO₂ Footprint", f"{total_co2:,.2f} kg")
         st.markdown(rem_text)
 with k3:
     with st.container(border=True):
         st.metric("Carbon Intensity", f"{avg_per_1000:.2f} kg / ₹1k")
-        st.markdown(f"**{low_impact_count}** low-intensity purchases")
+        st.markdown(f"**{low_impact_count}** low-impact choices")
 with k4:
     with st.container(border=True):
         st.metric("Avoidable Emissions", f"{total_potential_save:,.2f} kg")
-        st.markdown("Achievable via direct brand swaps")
+        st.markdown("Saveable via brand swaps")
 
 bar_ratio = min(1.0, max(0.0, utilization))
 st.progress(bar_ratio, text=f"Carbon Budget Utilization: {total_co2:.1f} / {monthly_budget:.1f} kg CO₂e ({utilization*100:.0f}%)")
 
 # ==============================================================================
-# 7. MAIN WORKSPACE TABS
+# 8. MAIN WORKSPACE TABS
 # ==============================================================================
 tab1, tab2, tab3, tab4 = st.tabs([
     "Dashboard",
@@ -620,41 +690,43 @@ with tab1:
     with col_l:
         with st.container(border=True):
             st.subheader("Emissions by Product Category")
-            st.markdown("Cumulative kg CO₂e across logged purchases")
+            st.markdown("Cumulative carbon footprint (kg CO₂e) across your logged purchases")
             if not df.empty:
                 sec_df = df.groupby("category", as_index=False).agg(total_co2=("co2", "sum"), spend=("price", "sum"), units=("qty", "sum"))
+                
                 chart = (
                     alt.Chart(sec_df)
-                    .mark_bar(cornerRadiusTopRight=4, cornerRadiusBottomRight=4)
+                    .mark_bar(cornerRadiusTopRight=5, cornerRadiusBottomRight=5)
                     .encode(
-                        y=alt.Y("category:N", sort="-x", title=None, axis=alt.Axis(labelLimit=250)),
-                        x=alt.X("total_co2:Q", title="Emissions (kg CO₂e)"),
+                        y=alt.Y("category:N", sort="-x", title=None, axis=alt.Axis(labelLimit=260, labelFontSize=12)),
+                        x=alt.X("total_co2:Q", title="Emissions (kg CO₂e)", axis=alt.Axis(labelFontSize=12)),
+                        color=alt.Color("total_co2:Q", scale=alt.Scale(scheme="greens"), legend=None),
                         tooltip=["category", "units", "spend", "total_co2"],
                     )
                     .properties(height=alt.Step(38))
                 )
-                st.altair_chart(chart, use_container_width=True, theme="streamlit")
+                st.altair_chart(chart, use_container_width=True)
             else:
                 st.markdown("No purchases logged yet. Use the sidebar form to add your first entry.")
 
         with st.container(border=True):
-            st.markdown("**Lifecycle Insight**")
+            st.markdown("💡 **Sustainability Insight**")
             st.markdown(random.choice(ECO_TIPS))
 
     with col_r:
         with st.container(border=True):
-            st.subheader(badge_title)
+            st.subheader(f"🌱 {badge_title}")
             st.markdown(badge_desc)
             badge_img = generate_automatic_turtle_image(stage_key=stage_key, utilization=utilization)
             st.image(badge_img, use_container_width=True)
-            st.markdown(f"**Carbon Gauge:** {utilization*100:.0f}% of {monthly_budget} kg quota  •  **Target:** {next_stage_hint}")
+            st.markdown(f"**Carbon Gauge:** `{utilization*100:.0f}%` of {monthly_budget} kg allowance  •  **Target:** {next_stage_hint}")
 
 with tab2:
     sim_c1, sim_c2 = st.columns([1.15, 1.4])
     with sim_c1:
         with st.container(border=True):
             st.subheader("Pre-Purchase Comparison")
-            st.markdown("Evaluate carbon savings before making a purchase.")
+            st.markdown("Evaluate potential carbon savings before committing to a purchase.")
             s_sec = st.selectbox("Sector", SECTORS, key="sim_sec")
             s_cat = st.selectbox("Product Category", SECTOR_TO_CATEGORIES[s_sec], key="sim_cat")
             sc1, sc2 = st.columns([1.4, 1])
@@ -674,21 +746,22 @@ with tab2:
 
     with sim_c2:
         with st.container(border=True):
-            st.subheader(f"Impact Assessment: {s_qty} × ₹{s_unit_pr:,.0f} (₹{s_total_pr:,.0f})")
+            st.subheader(f"Impact: {s_qty} × ₹{s_unit_pr:,.0f} (₹{s_total_pr:,.0f})")
             st.markdown(f"**Category:** {s_cat}")
             m_col1, m_col2 = st.columns(2)
             with m_col1:
-                st.metric("Standard Option", f"{planned_co2:.2f} kg CO₂e")
-                st.markdown(f"**Factor:** {base_mult*1000:.2f} kg / ₹1k")
+                with st.container(border=True):
+                    st.metric("Standard Choice", f"{planned_co2:.2f} kg CO₂e", "Higher footprint", delta_color="inverse")
+                    st.caption(f"Factor: {base_mult*1000:.2f} kg / ₹1k")
             with m_col2:
-                st.metric("Greener Alternative", f"{swapped_co2:.2f} kg CO₂e")
-                st.markdown(f"**Reduction:** -{saved_co2:.2f} kg ({pct_cut:.0f}% lower)")
-            st.divider()
-            st.markdown(f"**Recommended Swap:** {alt_desc}")
+                with st.container(border=True):
+                    st.metric("Greener Swap", f"{swapped_co2:.2f} kg CO₂e", f"-{saved_co2:.2f} kg ({pct_cut:.0f}% lower)", delta_color="normal")
+                    st.caption(f"Factor: {alt_mult*1000:.2f} kg / ₹1k")
+            st.markdown(f"**Recommended Alternative:** {alt_desc}")
 
     st.divider()
     st.subheader("Alternatives for Your Logged Purchases")
-    st.markdown("Review items already recorded in your monthly ledger and their lower-carbon equivalents.")
+    st.markdown("Retrospective recommendations for items already recorded in your monthly ledger.")
 
     if not df.empty:
         for idx, row in df[::-1].iterrows():
@@ -697,17 +770,17 @@ with tab2:
             with st.container(border=True):
                 r_left, r_right = st.columns([3, 1])
                 with r_left:
-                    st.markdown(f"**{row['item']}** — Qty: {q_val} × ₹{u_val:,.0f} (₹{row['price']:,.0f})")
-                    st.markdown(f"{row['category']}  •  {row['brand']}  •  {row['date']}")
+                    st.markdown(f"**{row['item']}** — Qty: {q_val} × ₹{u_val:,.0f} (`₹{row['price']:,.0f}`)")
+                    st.caption(f"{row['category']}  •  {row['brand']}  •  {row['date']}")
                 with r_right:
                     st.markdown(f"**{row['co2']} kg CO₂e**")
-                    st.markdown(f"Avoidable: **-{row['potential_co2_saved']} kg**")
-                st.markdown(f"**Recommended Swap:** {row['greener_swap']} (reduces footprint to **{row['swap_co2']} kg CO₂e**)")
+                    st.caption(f"Saveable: -{row['potential_co2_saved']} kg")
+                st.markdown(f"**Recommended Swap:** {row['greener_swap']} *(reduces footprint to `{row['swap_co2']} kg CO₂e`)*")
     else:
         st.markdown("No purchases recorded yet. Add an entry from the sidebar to view tailored swap recommendations.")
 
 with tab3:
-    q_filter = st.text_input("Filter directory by category, sector, or brand alternative", placeholder="e.g., millets, refurbished, bamboo, rail, cotton...")
+    q_filter = st.text_input("Search catalog by category, sector, or sustainable alternative", placeholder="e.g., millets, refurbished, bamboo, rail, cotton...")
     ref_df = pd.DataFrame(
         [
             {
@@ -785,6 +858,7 @@ with tab4:
                 xlsx_bytes,
                 f"ShopImpact_Report_{date.today()}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="primary",
                 use_container_width=True,
             )
 
@@ -812,6 +886,8 @@ with tab4:
         with d4:
             if st.button("Clear Ledger", use_container_width=True):
                 st.session_state.purchases = []
+                if "ledger" in st.query_params:
+                    del st.query_params["ledger"]
                 st.rerun()
     else:
         st.markdown("Your purchase ledger is currently empty. Record a transaction from the sidebar to view and export logs.")
