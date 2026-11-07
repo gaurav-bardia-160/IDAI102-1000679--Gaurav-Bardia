@@ -2,13 +2,12 @@
 ShopImpact - Personal Carbon Accounting & Conscious Shopping Ledger
 CRS: Artificial Intelligence | Course: Python Programming (Summative Assessment)
 100% Pure Python Implementation (Zero HTML, CSS, or JavaScript)
-Pure In-Memory Session State (Zero Shared Server Files & Zero Sync Issues)
+Pure In-Memory Session State (Zero Server Config Mutation & Zero Cross-Device Sync)
 """
 
 from datetime import date
 import io
 import math
-import os
 import random
 import subprocess
 import sys
@@ -31,82 +30,25 @@ except ImportError:
     PDF_AVAILABLE = False
 
 # ==============================================================================
-# 1. NATIVE STREAMLIT THEME ENGINE & IN-MEMORY CLOUD SESSION STATE
+# 1. PURE PRIVATE IN-MEMORY SESSION STATE (100% Isolated Per Device)
 # ==============================================================================
-CONFIG_DIR = ".streamlit"
-CONFIG_PATH = os.path.join(CONFIG_DIR, "config.toml")
-
-LIGHT_THEME = {
-    "base": "light",
-    "primaryColor": "#1B4332",
-    "backgroundColor": "#FFFFFF",
-    "secondaryBackgroundColor": "#F1EFEA",
-    "textColor": "#0B130E",
-    "font": "sans serif",
-}
-
-DARK_THEME = {
-    "base": "dark",
-    "primaryColor": "#34D399",
-    "backgroundColor": "#0E1412",
-    "secondaryBackgroundColor": "#18221E",
-    "textColor": "#F3F6F4",
-    "font": "sans serif",
-}
-
-
-def read_saved_theme_is_dark() -> bool:
-    """Reads .streamlit/config.toml to check active base theme."""
-    if os.path.exists(CONFIG_PATH):
-        try:
-            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-                return 'base = "dark"' in f.read()
-        except Exception:
-            return False
-    return False
-
-
-def apply_native_theme(dark_mode: bool):
-    """Updates live Streamlit config options and writes default config.toml."""
-    os.makedirs(CONFIG_DIR, exist_ok=True)
-    palette = DARK_THEME if dark_mode else LIGHT_THEME
-
-    for key, val in palette.items():
-        try:
-            st._config.set_option(f"theme.{key}", val)
-        except Exception:
-            pass
-
-    toml_lines = ["[theme]"] + [f'{k} = "{v}"' for k, v in palette.items()]
-    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        f.write("\n".join(toml_lines) + "\n")
-
-
-def toggle_theme_callback():
-    """Toggles theme mode for this session."""
-    new_mode = not st.session_state.dark_mode
-    st.session_state.dark_mode = new_mode
-    apply_native_theme(new_mode)
-    st.session_state._theme_sync_needed = True
-
-
-# Initialize pure in-memory session state (100% private per device)
 if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = read_saved_theme_is_dark()
-    apply_native_theme(st.session_state.dark_mode)
+    st.session_state.dark_mode = False
 
 if "purchases" not in st.session_state:
     st.session_state.purchases = []
+
+
+def toggle_theme_callback():
+    """Toggles theme state ONLY for this private device session."""
+    st.session_state.dark_mode = not st.session_state.dark_mode
+
 
 st.set_page_config(
     page_title="ShopImpact | Carbon Accounting Dashboard",
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-if st.session_state.get("_theme_sync_needed"):
-    st.session_state._theme_sync_needed = False
-    st.rerun()
 
 # ==============================================================================
 # 2. 108 PRODUCT CATEGORIES DATABASE (Calibrated for INR ₹)
@@ -252,7 +194,7 @@ ECO_TIPS = [
 
 
 # ==============================================================================
-# 3. 10-STAGE AUTOMATIC TURTLE ENGINE (10 Distinct Native Images)
+# 3. 10-STAGE AUTOMATIC TURTLE ENGINE (10 Unique Drawings, No "Phase X" Labels)
 # ==============================================================================
 class PurePythonTurtle:
     def __init__(self, width=480, height=225, bg_color="#F1EFEA"):
