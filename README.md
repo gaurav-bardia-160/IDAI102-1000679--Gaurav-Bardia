@@ -106,14 +106,12 @@ This application is designed for seamless, free deployment on **Streamlit Commun
 
 ## 📸 Application Screenshots
 
-*(Student Note: Replace the links below with actual screenshots of your running app)*
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/aadfdb4c-8158-47d6-833c-b1abc8b395f8" />
 
-![Dashboard View](https://via.placeholder.com/800x400.png?text=Dashboard+Overview+Screenshot)  
-*Figure 1: The main dashboard featuring KPI metrics, Altair charts, and the live Turtle badge.*
+<img width="1920" height="1078" alt="{8F19112C-3B9F-4573-B133-7D2E4CC9BA34}" src="https://github.com/user-attachments/assets/bcb98c9a-e128-48d8-9baf-3550757827ca" />
 
-![Simulator View](https://via.placeholder.com/800x400.png?text=What-If+Simulator+Screenshot)  
-*Figure 2: The interactive 'What-If' comparison simulator.*
+<img width="1920" height="1078" alt="{1A6BA418-F0C6-4546-9AE1-8DE7E6030A09}" src="https://github.com/user-attachments/assets/20c18c4c-755c-4696-80e3-f3bc58b36ba0" />
+
+<img width="1920" height="1080" alt="{F162F8DA-93C1-49B6-AC3D-554C6D11C6EB}" src="https://github.com/user-attachments/assets/a2d25c09-13d5-4634-801c-e39af70bf315" />
 
 ---
-
-**Developed for WACP International - Artificial Intelligence Summative Assessment**
