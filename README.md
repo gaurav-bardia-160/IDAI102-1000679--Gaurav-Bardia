@@ -9,12 +9,12 @@
 
 ---
 
-## 📖 Project Overview
+## Project Overview
 **ShopImpact** is an interactive, Python-based conscious consumerism application built with **Streamlit**. It transforms everyday shopping routines into a mindful, eco-conscious experience. By leveraging curated spend-based carbon emission multipliers (EPA/DEFRA standards), the app translates the financial cost of purchases (in INR ₹) into an estimated environmental cost (kg CO₂e). It gently nudges users toward sustainable choices through an interactive "What-If" simulator, automated green alternatives, and a dynamically drawn 10-stage Turtle graphics reward system.
 
 ---
 
-## 🎯 The Problem It Solves
+## The Problem It Solves
 1. **The Invisible Footprint:** Consumers usually cannot correlate a currency amount (e.g., ₹1,500) with its hidden environmental burden. ShopImpact makes this invisible cost immediately visible.
 2. **Eco-Guilt vs. Positive Action:** Most carbon trackers lecture users, causing anxiety. ShopImpact uses positive reinforcement and gamified achievements (badges and blooming trees) to empower users.
 3. **Information Asymmetry:** Shoppers often want to buy sustainably but don't know the exact alternatives. This app maps 108 product categories directly to actionable, specific brand and material swaps.
@@ -25,24 +25,24 @@ The app provides a real-time, side-by-side comparison of standard purchases agai
 
 ---
 
-## 👥 Key Stakeholders & Target Audience
+## Key Stakeholders & Target Audience
 
 | Stakeholder Group | Role / Interest | How ShopImpact Benefits Them |
 | :--- | :--- | :--- |
-| **🎓 Young Adults & Students** | Primary End Users | Fast, mobile-friendly interface to track fast-fashion and electronics footprints, gamified with visual badges. |
-| **👨‍👩‍👧 Eco-Conscious Families** | Secondary Users | Tracks household grocery and utility footprints against a defined monthly carbon quota. |
-| **🏢 SME Procurement Teams** | Commercial Users | Utilizes the 108-category database and Auto-Fit Excel / PDF ledger exports to audit and reduce office supply emissions. |
+| **Young Adults & Students** | Primary End Users | Fast, mobile-friendly interface to track fast-fashion and electronics footprints, gamified with visual badges. |
+| **Eco-Conscious Families** | Secondary Users | Tracks household grocery and utility footprints against a defined monthly carbon quota. |
+| **SME Procurement Teams** | Commercial Users | Utilizes the 108-category database and Auto-Fit Excel / PDF ledger exports to audit and reduce office supply emissions. |
 
 ---
 
-## ✨ Complete Feature Set
+## Complete Feature Set
 
-### 1. 🛒 Conscious Purchase Logging & Live Analytics
+### 1. Conscious Purchase Logging & Live Analytics
 * **108-Category Database:** Covers 8 major sectors (Apparel, Food, Tech, Commute, etc.) with precise kg CO₂e / ₹1,000 multipliers.
 * **Monthly Dashboard:** Real-time KPI metric cards tracking Total Spend (₹), Estimated Footprint (kg CO₂e), Carbon Intensity, and Potential Savings.
 * **Dynamic Budget Progress:** A live progress bar mapping total emissions against a user-defined monthly carbon allowance.
 
-### 2. 🐢 10-Stage Reactive Turtle Graphics Engine (Pure Python)
+### 2. 10-Stage Reactive Turtle Graphics Engine (Pure Python)
 * Built entirely without HTML/JS, utilizing Python's `PIL` (Pillow) library to simulate Turtle vector drawing.
 * The artwork dynamically evolves across **10 distinct stages** based on the user's carbon budget utilization:
   * *0% Used:* **Fresh Start** (Rising sun)
@@ -52,19 +52,19 @@ The app provides a real-time, side-by-side comparison of standard purchases agai
   * *>100% Used:* **Heavy Carbon Footprint** (Red alert)
 * Features a live 360-degree carbon gauge arc that physically updates with every logged kilogram of CO₂e.
 
-### 3. 🔄 Pre-Purchase 'What-If' Simulator
+### 3. Pre-Purchase 'What-If' Simulator
 * A dedicated tab allowing users to test a purchase price and category *before* buying.
 * Displays a side-by-side metric comparison: **Standard Option vs. Greener Alternative**.
 * Calculates exact CO₂e avoided and displays actionable, verified swaps (e.g., *Switching to Fairphone, Thrift stores, or Oat Milk*).
 
-### 4. 📥 Zero-Dependency Export Engine
+### 4. Zero-Dependency Export Engine
 * **Auto-Fit Excel (.xlsx):** Uses Python's `zipfile` and `xlsxwriter` engines to mathematically auto-size columns for perfectly formatted spreadsheet ledgers.
 * **Professional PDF Audit Report:** Built with `fpdf2`, generating a sleek, printable document of the user's monthly climate impact, current standing, and detailed purchase rows.
 * **CSV Logging:** Standard comma-separated export using `utf-8-sig` to ensure precise INR (₹) symbol rendering in Excel.
 
 ---
 
-## 🎨 User Interface (UI) Design
+## User Interface (UI) Design
 * **100% Native Streamlit Engine:** Achieves a bespoke aesthetic utilizing `.streamlit/config.toml` without relying on messy CSS injections.
 * **Adaptive Light/Dark Mode:** 
   * *Light Theme:* Warm organic sand (`#F6F5F0`) with deep forest green accents (`#1B4332`), evoking natural linen and earth.
@@ -73,7 +73,7 @@ The app provides a real-time, side-by-side comparison of standard purchases agai
 
 ---
 
-## 🛠️ Integration Details & Architecture
+## Integration Details & Architecture
 * **Frontend Framework:** `Streamlit` (Layout, state management, native widgets).
 * **Data Handling & Calculations:** `Pandas` (Aggregations, group-bys for the Altair charts, formatting ledgers).
 * **Visualization:** `Altair` (Declarative statistical visualizations) and `Pillow (PIL)` (Custom geometric vector-style graphics engine replacing traditional desktop `turtle` for cloud compatibility).
@@ -81,7 +81,7 @@ The app provides a real-time, side-by-side comparison of standard purchases agai
 
 ---
 
-## 🚀 Deployment Instructions
+## Deployment Instructions
 
 This application is designed for seamless, free deployment on **Streamlit Community Cloud**.
 
@@ -104,7 +104,7 @@ This application is designed for seamless, free deployment on **Streamlit Commun
 
 ---
 
-## 📸 Application Screenshots
+## Application Screenshots
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/aadfdb4c-8158-47d6-833c-b1abc8b395f8" />
 
