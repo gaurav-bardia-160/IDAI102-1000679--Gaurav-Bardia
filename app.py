@@ -858,7 +858,6 @@ with tab4:
                 xlsx_bytes,
                 f"ShopImpact_Report_{date.today()}.xlsx",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                type="primary",
                 use_container_width=True,
             )
 
