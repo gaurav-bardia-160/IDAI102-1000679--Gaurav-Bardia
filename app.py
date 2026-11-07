@@ -571,7 +571,7 @@ def generate_pdf_report(df: pd.DataFrame, total_spend: float, total_co2: float, 
 # 6. SIDEBAR: PURCHASE ENTRY & BUDGET TARGET
 # ==============================================================================
 with st.sidebar:
-    st.subheader("🌱 ShopImpact")
+    st.subheader("ShopImpact")
     st.markdown(f"Reference Catalog: **{len(PRODUCT_CATALOG)} Categories**")
 
     monthly_budget = st.slider("Monthly Carbon Target (kg CO₂e)", min_value=15, max_value=250, value=60, step=5)
