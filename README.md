@@ -1,9 +1,9 @@
 # 🌿 ShopImpact: Conscious Shopping Dashboard
 
-[![Live App on Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://idai102-1000679--gaurav-bardia.streamlit.app/)
-![Python](https://img.shields.io/badge/Python-3.11%2B-3B82F6?style=for-the-badge&logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-Web_App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Production_Ready-22C55E?style=for-the-badge)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://idai102-1000679-gaurav-bardia.streamlit.app)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3B82F6?style=for-the-badge&logo=python&logoColor=white)](https://idai102-1000679-gaurav-bardia.streamlit.app)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Web_App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://idai102-1000679-gaurav-bardia.streamlit.app)
+[![Status](https://img.shields.io/badge/Status-Production_Ready-22C55E?style=for-the-badge)](https://idai102-1000679-gaurav-bardia.streamlit.app)
 
 > **🌐 Live Web Application:** [**Click Here to Launch ShopImpact on Streamlit Cloud**](https://idai102-1000679--gaurav-bardia.streamlit.app/)  
 
